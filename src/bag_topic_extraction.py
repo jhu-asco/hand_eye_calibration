@@ -27,7 +27,7 @@ def transformPoseToList(msg):
                                     msg.orientation.z, msg.orientation.w]))
     yaw, pitch, roll = tf.euler_from_quaternion(quat, 'rzyx')
     return [msg.position.x, msg.position.y, msg.position.z,
-            roll, pitch, yaw]
+            msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
 
 
 def extractTopicWithHeader(bag, topic_name, transform_fcn,
