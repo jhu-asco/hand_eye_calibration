@@ -19,15 +19,41 @@ def getRelativeTimeStamp(bag, dt):
     return rospy.Time.from_sec(bag.get_start_time() + dt)
 
 
-def transformPoseToList(msg):
+def transformPoseToList(msg,topic_name):
     """
     Transform a pose message into an array of xyz, Euler rpy in ZYX format
     """
-    quat = tf.unit_vector(np.array([msg.orientation.x, msg.orientation.y,
-                                    msg.orientation.z, msg.orientation.w]))
-    yaw, pitch, roll = tf.euler_from_quaternion(quat, 'rzyx')
-    return [msg.position.x, msg.position.y, msg.position.z,
-            msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
+    if topic_name == '/vins_estimator/camera_pose':
+        quat = tf.unit_vector(np.array([msg.pose.orientation.x, msg.pose.orientation.y,
+                                        msg.pose.orientation.z, msg.pose.orientation.w]))
+        yaw, pitch, roll = tf.euler_from_quaternion(quat, 'rzyx')
+
+        return [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z,
+                roll, pitch, yaw]
+    elif topic_name == '/vrpn_client/vins/pose':
+        quat = tf.unit_vector(np.array([msg.transform.rotation.x, msg.transform.rotation.y,
+                                        msg.transform.rotation.z, msg.transform.rotation.w]))
+        yaw, pitch, roll = tf.euler_from_quaternion(quat, 'rzyx')
+
+        return [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z,
+            roll, pitch, yaw]
+
+def transformPoseToList_quat(msg,topic_name):
+    """
+    Transform a pose message into an array of xyz, quaternion in xyzw format
+    """
+    if topic_name == '/vins_estimator/camera_pose':
+        quat = tf.unit_vector(np.array([msg.pose.orientation.x, msg.pose.orientation.y,
+                                        msg.pose.orientation.z, msg.pose.orientation.w]))
+        return [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z,
+                quat[0], quat[1], quat[2], quat[3]]
+
+    elif topic_name == '/vrpn_client/vins/pose':
+        quat = tf.unit_vector(np.array([msg.transform.rotation.x, msg.transform.rotation.y,
+                                        msg.transform.rotation.z, msg.transform.rotation.w]))
+
+        return [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z,
+                quat[0], quat[1], quat[2], quat[3]]
 
 
 def extractTopicWithHeader(bag, topic_name, transform_fcn,
@@ -57,7 +83,7 @@ def extractTopicWithHeader(bag, topic_name, transform_fcn,
             break
         elif tdiff < 0:
             continue
-        data_entry = transform_fcn(msg)
+        data_entry = transform_fcn(msg,topic_name)
         data_list.append(np.hstack([tdiff, data_entry]))
     data = np.vstack(data_list)
     return data
