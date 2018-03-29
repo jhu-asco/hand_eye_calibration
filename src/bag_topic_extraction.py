@@ -23,12 +23,11 @@ def transformPoseToList(msg):
     """
     Transform a pose message into an array of xyz, Euler rpy in ZYX format
     """
-    quat = tf.unit_vector(np.array([msg.orientation.x, msg.orientation.y,
-                                    msg.orientation.z, msg.orientation.w]))
-    yaw, pitch, roll = tf.euler_from_quaternion(quat, 'rzyx')
-    return [msg.position.x, msg.position.y, msg.position.z,
-            msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
-
+    print(msg)
+    if(hasattr(msg.pose,'orientation')):
+         return [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]
+    if(hasattr(msg.pose,'rotation')):
+         return [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, msg.pose.rotation.x, msg.pose.rotation.y, msg.pose.rotation.z, msg.pose.rotation.w]
 
 def extractTopicWithHeader(bag, topic_name, transform_fcn,
                            tStart=None, max_dt=None):
