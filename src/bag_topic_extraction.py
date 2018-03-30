@@ -55,7 +55,6 @@ def transformPoseToList_quat(msg,topic_name):
         return [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z,
                 quat[0], quat[1], quat[2], quat[3]]
 
-
 def extractTopicWithHeader(bag, topic_name, transform_fcn,
                            tStart=None, max_dt=None):
     """
