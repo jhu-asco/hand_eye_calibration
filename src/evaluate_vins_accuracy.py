@@ -17,10 +17,10 @@ def interpolatePoses(ts_out, ts_in, pose_in):
     """
     pos_out_list = []
     for i in range(3):
-        pos_out_list.append(np.interp(ts_out, ts_in, pose_in[i, :]))
+        pos_out_list.append(np.interp(ts_out, ts_in, pose_in[:,i]))
     position_out = np.vstack(pos_out_list)
     quat_out_list = []
-    quat_in = pose_in[3:, :].T
+    quat_in = pose_in[:,3:]
     # Find fraction for interpolating quaternion
     N = ts_in.size
     out = np.interp(ts_out, ts_in, np.arange(N))
@@ -57,8 +57,9 @@ def leftMultiplyPose(pose0, pose1):
     q0 = pose0[3:]
     q0_c = tf.quaternion_conjugate(q0)
     p1 = pose1[:3, :]
-    q1 = pose1[3:, :]
+    q1 = pose1[3:,:]
     N = p1.shape[1]
+    #print pose1.shape
     p1_exp = np.vstack((p1, np.zeros(N)))
     p1_rot = tf.quaternion_multiply(q0, tf.quaternion_multiply(p1_exp, q0_c))
     q_out = tf.quaternion_multiply(q0, q1)
