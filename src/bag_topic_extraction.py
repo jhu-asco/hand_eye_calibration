@@ -37,6 +37,8 @@ def transformPoseToList(msg,topic_name):
 
         return [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z,
             roll, pitch, yaw]
+    else:
+        assert False, "topic name '%r' not supported" % topic_name
 
 def transformPoseToList_quat(msg,topic_name):
     """
@@ -54,6 +56,8 @@ def transformPoseToList_quat(msg,topic_name):
 
         return [msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z,
                 quat[0], quat[1], quat[2], quat[3]]
+    else:
+        assert False, "topic name '%r' not supported" % topic_name
 
 def extractTopicWithHeader(bag, topic_name, transform_fcn,
                            tStart=None, max_dt=None):

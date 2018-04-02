@@ -175,12 +175,13 @@ def estimate(ts_vins, vins_poses, ts_mocap, mocap_poses):
         ts_mocap - Timestamps for Mocap poses [nm]
         vins_poses - Vins poses [7xnv]
         mocap_poses - Mocap poses [7xnm]
-    Return matrices [2x7] where first row is Mocap to VINS and second row
-    is IMU to Marker. Pose = [x,y,z,Qx,Qy,Qz,Qw]
+    Return matrices [1x14] where first 7 elements are Mocap to VINS and second 7
+    are IMU to Marker. Pose = [x,y,z,Qx,Qy,Qz,Qw]
     """
     vins_interp = interpolatePoses(ts_mocap, ts_vins, vins_poses)
     cons = ({'type': 'eq', 'fun': quatConstraint1},
             {'type': 'eq', 'fun': quatConstraint2})
-    res = opt.minimize(cost, np.zeros(14), args=(vins_interp, mocap_poses),
+    x0 = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1])
+    res = opt.minimize(cost, x0, args=(vins_interp, mocap_poses),
                        constraints=cons, method='SLSQP')
     return res.x

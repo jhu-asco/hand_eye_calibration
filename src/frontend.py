@@ -32,7 +32,7 @@ def plot_error():
     for i in range(0, 7):
         titles = ['error in translation in x','error in translation in y', 'error in translation in z','error in orientation in x', 'error in orientation in y', 'error in orientation in z','error in orientation in w']
         plt.figure(i)
-        plt.plot(vins_data[:, 0], error[i,:], 'r')
+        plt.plot(ts_mocap, error[i,:], 'r')
         plt.title(titles[i])
     plt.show()
 
@@ -48,9 +48,10 @@ mocap_poses = np.transpose(mocap_poses)
 
 # Find estimates
 estimates = vins_acc.estimate(ts_vins, vins_poses, ts_mocap, mocap_poses)
+vins_interp = vins_acc.interpolatePoses(ts_mocap, ts_vins, vins_poses)
 
 # Find and plot error
-vins_in_mocap = vins_acc.transformVINSToMocap(estimates, vins_poses.T)
-error = mocap_poses[:,:vins_in_mocap.shape[1]] - vins_in_mocap
+vins_in_mocap = vins_acc.transformVINSToMocap(estimates, vins_interp)
+error = mocap_poses - vins_in_mocap
 
 plot_error()
