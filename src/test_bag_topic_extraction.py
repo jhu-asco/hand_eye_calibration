@@ -39,7 +39,7 @@ class TestBagTopicExtraction(unittest.TestCase):
 
     def testTransformPoseToList(self):
         pose_msg = self.generatePoseMsg(1)
-        list_transformed = mod.transformPoseToList(pose_msg)
+        list_transformed = mod.transformPoseToList(pose_msg,'/vins_estimator/camera_pose')
         list_exp = [1,0,1,0,1,0]
         np_testing.assert_allclose(list_transformed, list_exp, atol=1e-3)
 
@@ -48,7 +48,7 @@ class TestBagTopicExtraction(unittest.TestCase):
         first_pose_msg = self.generatePoseMsg(0)
         tStart = first_pose_msg.header.stamp
         rel_tStart = (pose_msg.header.stamp - tStart).to_sec()
-        list_transformed = mod.transformPoseToList(first_pose_msg)
+        list_transformed = mod.transformPoseToList(first_pose_msg,'/vins_estimator/camera_pose')
         TWH_exp  = np.hstack([rel_tStart, list_transformed])
 
         bag = rosbag.Bag('test.bag')
