@@ -185,3 +185,13 @@ def estimate(ts_vins, vins_poses, ts_mocap, mocap_poses):
     res = opt.minimize(cost, x0, args=(vins_interp, mocap_poses),
                        constraints=cons, method='SLSQP')
     return res.x
+
+def error(pose1,pose2):
+    xyzerr = pose1[0:3,:] - pose2[0:3,:]
+    rpy_list = []
+    for q1,q2 in zip(pose1[3:7,:].T,pose2[3:7,:].T):
+        quaterr = tf.quaternion_multiply(tf.quaternion_inverse(q2),q1)
+        eulererr = tf.euler_from_quaternion(quaterr)
+        rpy_list.append(eulererr)
+    rpy_list = np.array(rpy_list).T
+    return np.vstack((xyzerr,rpy_list))
