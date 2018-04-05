@@ -1,0 +1,7 @@
+Bag File Name: VINS Dataset/vins_optitrak_imu_calib.bag
+VINS Topic Name: /vins_estimator/camera_pose
+MOCAP Topic Name: /vrpn_client/vins/pose
+Mocap To VINS Pose: [-1.10606394  1.7835501   1.36354068  0.00780447  0.0080728   0.73280779
+  0.68034314]
+IMU to Marker Pose: [-0.03089006 -0.08928359 -0.11478114 -0.14510867  0.65651892 -0.72956803
+ -0.12512884]

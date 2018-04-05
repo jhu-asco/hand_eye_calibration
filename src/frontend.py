@@ -14,6 +14,7 @@ parser.add_argument("mocap_topic")  # /vrpn_client/vins/pose
 parser.add_argument("--start",type=float,default=None)
 parser.add_argument("--length",type=float,default=None)
 parser.add_argument("--output")
+parser.add_argument("--plot")
 args = parser.parse_args()
 
 # Pull in the data
@@ -85,4 +86,5 @@ if args.output is not None:
     f.write("IMU to Marker Pose: " + str(estimates[7:]) + "\n")
 # Add additional metrics to write out here
     f.close()
-plot_error()
+if args.plot is not None:
+    plot_error()
