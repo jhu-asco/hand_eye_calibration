@@ -5,16 +5,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import rospy
+import tf.transformations as tf
 
 # Parse the input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("bagfilename")
-parser.add_argument("vins_topic")   # /vins_estimator/camera_pose
-parser.add_argument("mocap_topic")  # /vrpn_client/vins/pose
-parser.add_argument("--start",type=float,default=None)
-parser.add_argument("--length",type=float,default=None)
-parser.add_argument("--output")
-parser.add_argument("--plot")
+parser.add_argument("bagfilename",help="Bag File to use")
+parser.add_argument("vins_topic",help="VINS data topic.  Use /vins_estimator/camera_pose")
+parser.add_argument("mocap_topic",help="Motion Capture data topic.  Use /vrpn_client/vins/pose")
+parser.add_argument("--start",type=float,default=None,help="Start calibrating after X seconds")
+parser.add_argument("--length",type=float,default=None,help="Calibrate using X seconds")
+parser.add_argument("--output",help="Add the results to the provided file name")
+parser.add_argument("--plot",help="Save the plots with the provided file name")
+parser.add_argument("--show",help="Show the plots")
 args = parser.parse_args()
 
 # Pull in the data
@@ -29,25 +31,18 @@ mocap_data = bag_ex.extractTopicWithHeader(bag, args.mocap_topic, bag_ex.transfo
 full_vins_data = bag_ex.extractTopicWithHeader(bag, args.vins_topic, bag_ex.transformPoseToList_quat)
 full_mocap_data = bag_ex.extractTopicWithHeader(bag, args.mocap_topic, bag_ex.transformPoseToList_quat)
 
-def plot_data():
-    ''' Function to plot data read from the bag'''
-    titles = ['','translation in x','translation in y', 'translation in z','orientation in x', 'orientation in y', 'orientation in z']
-
-    for i in range(1,6):
-        plt.figure(i)
-        plt.plot(vins_data[:,0],vins_data[:,i],'r',mocap_data[:,0],mocap_data[:,i],'b')
-        plt.title(titles[i])
-    plt.show()
-
 def plot_error():
     ''' Function to plot the error between VINS and Mocap poses'''
+    titles = ['error in translation in x','error in translation in y', 'error in translation in z','error in orientation in roll', 'error in orientation in pitch', 'error in orientation in yaw']
+    plotsuffix = ['X','Y','Z','Roll','Pitch','Yaw']
     for i in range(0, 6):
-        titles = ['error in translation in x','error in translation in y', 'error in translation in z','error in orientation in roll', 'error in orientation in pitch', 'error in orientation in yaw']
         plt.figure(i)
         plt.plot(full_ts_mocap, error[i,:], 'r')
         plt.title(titles[i])
-    plt.show()
-
+        plt.savefig(args.plot+plotsuffix[i]+".png")
+    if args.show is not None:
+        plt.show()
+        
 #plot_data()
 
 ts_vins = []
@@ -74,16 +69,22 @@ error = vins_acc.error(full_mocap_poses,vins_in_mocap)
 
 print(estimates)
 if args.output is not None:
-    f = open(args.output,"w")
-    f.write("Bag File Name: " + args.bagfilename + "\n")
-    f.write("VINS Topic Name: " + args.vins_topic + "\n")
-    f.write("MOCAP Topic Name: " + args.mocap_topic + "\n")
-    if args.start is not None:
-        f.write("Start Time: " + str(args.start) + "\n")
-    if args.length is not None:
-        f.write("Length: " + str(args.length) + "\n")
-    f.write("Mocap To VINS Pose: " + str(estimates[:7]) + "\n")
-    f.write("IMU to Marker Pose: " + str(estimates[7:]) + "\n")
+    f = open(args.output,"a")
+    formatstring = "{:>15}, {:>7}, {:>7}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}\n"
+    output = [args.bagfilename, args.start, args.length]
+    for i in range(0,3):
+        output.append(estimates[i])
+    rpy = tf.euler_from_quaternion(estimates[3:7])
+    for i in range(0,3):
+        output.append(rpy[i])
+    for i in range(7,10):
+        output.append(estimates[i])
+    rpy = tf.euler_from_quaternion(estimates[10:14])
+    for i in range(0,3):
+        output.append(rpy[i])
+    for i in range(0,6):
+        output.append(np.mean(np.absolute(error[i,:])))
+    f.write(formatstring.format(*output))
 # Add additional metrics to write out here
     f.close()
 if args.plot is not None:
